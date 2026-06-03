@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     chroma_path: str = "./data/chroma"
     collection_name: str = "intrabot"
     max_tokens: int = 512
+    pdf_do_ocr: bool = False
+    pdf_do_table_structure: bool = False
+    pdf_page_batch_size: int = 50
 
 
 settings = Settings()

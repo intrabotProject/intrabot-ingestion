@@ -106,6 +106,9 @@ EMBEDDING_PROVIDER=gemini
 | `CHROMA_PATH` | Chemin de la base ChromaDB | `./data/chroma` |
 | `COLLECTION_NAME` | Nom de la collection Chroma | `intrabot` |
 | `MAX_TOKENS` | Taille maximale d'un chunk (en tokens) | `512` |
+| `PDF_DO_OCR` | Active l'OCR sur les PDF (coûteux en mémoire, inutile pour les PDF natifs) | `false` |
+| `PDF_DO_TABLE_STRUCTURE` | Active la reconstruction des tableaux | `false` |
+| `PDF_PAGE_BATCH_SIZE` | Nombre de pages traitées par lot (évite les `bad_alloc` sur les gros PDF) | `50` |
 
 Exemple de fichier `.env` :
 
