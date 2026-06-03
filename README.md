@@ -6,6 +6,64 @@ Pipeline : **Google Drive → Docling (parse) → HybridChunker → Cohere (embe
 
 ---
 
+## Démarrage rapide
+
+**1. Cloner le repo**
+```bash
+git clone https://github.com/VOTRE-ORGA/intrabot-ingestion.git
+cd intrabot-ingestion
+```
+
+**2. Créer et activer le venv**
+```bash
+python -m venv .venv
+```
+
+| OS | Commande |
+|---|---|
+| Windows cmd | `.venv\Scripts\activate.bat` |
+| Windows PowerShell | `.venv\Scripts\Activate.ps1` |
+| Linux / macOS | `source .venv/bin/activate` |
+
+> **PowerShell bloque ?** Exécutez d'abord :
+> ```powershell
+> Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+> ```
+
+**3. Installer les dépendances**
+```bash
+pip install -r requirements.txt
+```
+
+**4. Configurer le `.env`**
+```bash
+cp .env.example .env
+```
+Ouvrir `.env` et renseigner `COHERE_API_KEY` avec votre clé gratuite depuis https://dashboard.cohere.com/api-keys
+
+**5. Ajouter des documents à ingérer**
+```bash
+mkdir -p data/docs
+# Copier vos PDF / DOCX / HTML dans data/docs/
+```
+
+**6. Lancer le serveur**
+```bash
+python -m uvicorn app.infrastructure.api:app --port 8001 --reload
+```
+
+**7. Tester via Swagger**
+
+Ouvrir http://127.0.0.1:8001/docs
+
+| Endpoint | Méthode | Description |
+|---|---|---|
+| `/ingest` | `POST` | Ingère les documents du dossier `data/docs/` |
+| `/embed` | `POST` | Envoie une question, reçoit son vecteur |
+| `/health` | `GET` | Vérifie que le service tourne |
+
+---
+
 ## Architecture hexagonale
 
 ```
@@ -34,28 +92,15 @@ app/
 
 ## Installation
 
+> Voir la section [Démarrage rapide](#démarrage-rapide) pour les étapes détaillées.
+
 ```bash
-# 1. Cloner le repo
-git clone https://github.com/TON-ORGA/intrabot-ingestion.git
+git clone https://github.com/VOTRE-ORGA/intrabot-ingestion.git
 cd intrabot-ingestion
-
-# 2. Créer et activer le venv
 python -m venv .venv
-
-# Windows — cmd
-.venv\Scripts\activate.bat
-# Windows — PowerShell (nécessite : Set-ExecutionPolicy -Scope CurrentUser RemoteSigned)
-.venv\Scripts\Activate.ps1
-
-# Linux / macOS
-source .venv/bin/activate
-
-# 3. Installer les dépendances
+# Activer le venv selon votre OS (voir Démarrage rapide)
 pip install -r requirements.txt
-
-# 4. Configurer les variables d'environnement
-cp .env.example .env
-# Ouvrir .env et renseigner COHERE_API_KEY
+cp .env.example .env   # puis renseigner COHERE_API_KEY
 ```
 
 ---
@@ -67,7 +112,7 @@ cp .env.example .env
 mkdir -p data/docs
 
 # Démarrer le serveur
-python -m uvicorn app.infrastructure.api:app --port 8000 --reload
+python -m uvicorn app.infrastructure.api:app --port 8001 --reload
 ```
 
 ---
@@ -76,9 +121,10 @@ python -m uvicorn app.infrastructure.api:app --port 8000 --reload
 
 | Action | Méthode | URL |
 |---|---|---|
-| Vérifier que le service tourne | `GET` | `http://localhost:8000/health` |
-| Lancer l'ingestion | `POST` | `http://localhost:8000/ingest` |
-| Interface Swagger | — | `http://localhost:8000/docs` |
+| Vérifier que le service tourne | `GET` | `http://localhost:8001/health` |
+| Lancer l'ingestion | `POST` | `http://localhost:8001/ingest` |
+| Envoyer une question (vecteur) | `POST` | `http://localhost:8001/embed` |
+| Interface Swagger | — | `http://localhost:8001/docs` |
 
 ---
 
