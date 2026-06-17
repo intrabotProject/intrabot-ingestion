@@ -13,13 +13,21 @@ class CohereEmbedder(Embedder):
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         if not texts:
             return []
-        resp = self.client.embed(
-            texts=texts,
-            model=self.MODEL,
-            input_type="search_document",
-            embedding_types=["float"],
-        )
-        return resp.embeddings.float
+
+        COHERE_BATCH_LIMIT = 96
+        all_embeddings = []
+
+        for i in range(0, len(texts), COHERE_BATCH_LIMIT):
+            batch = texts[i:i + COHERE_BATCH_LIMIT]
+            resp = self.client.embed(
+                texts=batch,
+                model=self.MODEL,
+                input_type="search_document",
+                embedding_types=["float"],
+            )
+            all_embeddings.extend(resp.embeddings.float)
+
+        return all_embeddings
 
     def embed_query(self, text: str) -> list[float]:
         resp = self.client.embed(
