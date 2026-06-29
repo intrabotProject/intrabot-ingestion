@@ -1,5 +1,7 @@
 """Orchestration du pipeline d'ingestion documentaire."""
 
+import hashlib
+
 from app.domain.access import DEFAULT_DOCUMENT_CATEGORY
 from app.domain.model import Document
 from app.domain.ports import (
@@ -36,18 +38,31 @@ class IngestionService:
         self.vector_store = vector_store
         self._metadata_repository = metadata_repository
 
+    @staticmethod
+    def _compute_file_hash(path: str) -> str:
+        with open(path, "rb") as f:
+            return hashlib.md5(f.read()).hexdigest()
+
     def run(self) -> dict[str, int]:
-        """Ingère tous les documents retournés par le loader."""
+        """Ingère uniquement les documents nouveaux ou modifiés depuis la dernière indexation."""
         documents = self.loader.load()
         total_chunks = 0
+        files_processed = 0
 
         for document in documents:
+            current_hash = self._compute_file_hash(document.path)
+            if self._metadata_repository.get_hash(document.name) == current_hash:
+                continue  # fichier inchangé, on saute
+
+            self.vector_store.delete_by_source(document.name)
             category = self._metadata_repository.get_category(document.name)
             self._metadata_repository.set_category(document.name, category)
             total_chunks += self.ingest_document(document, category=category)["chunks_indexed"]
+            self._metadata_repository.set_hash(document.name, current_hash)
+            files_processed += 1
 
         return {
-            "files_processed": len(documents),
+            "files_processed": files_processed,
             "chunks_indexed": total_chunks,
             "total_in_collection": self.vector_store.count(),
         }

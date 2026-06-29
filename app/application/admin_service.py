@@ -5,6 +5,7 @@ Fusionne l'état disque (`data/docs/`), le registre de catégories et l'index
 ChromaDB pour exposer le corpus, gérer les uploads et déclencher la réindexation.
 """
 
+import hashlib
 from pathlib import Path
 
 from app.application.ingestion_service import IngestionService
@@ -101,6 +102,7 @@ class AdminService:
             category=normalized_category,
         )
         chunks_indexed = ingest_result["chunks_indexed"]
+        self._metadata_repository.set_hash(saved_name, self._compute_file_hash(document))
 
         return DocumentSummary(
             source=saved_name,
@@ -133,6 +135,7 @@ class AdminService:
             category=normalized_category,
         )
         chunks_indexed = ingest_result["chunks_indexed"]
+        self._metadata_repository.set_hash(source, self._compute_file_hash(document))
 
         return DocumentSummary(
             source=source,
@@ -167,6 +170,7 @@ class AdminService:
             document,
             category=category,
         )
+        self._metadata_repository.set_hash(source, self._compute_file_hash(document))
 
         return ReindexDocumentResult(
             source=source,
@@ -187,3 +191,8 @@ class AdminService:
         if document is None:
             return None
         return Path(document.path).stat().st_size
+
+    @staticmethod
+    def _compute_file_hash(document: Document) -> str:
+        with open(document.path, "rb") as f:
+            return hashlib.md5(f.read()).hexdigest()

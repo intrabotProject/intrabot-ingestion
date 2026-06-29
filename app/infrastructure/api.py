@@ -8,6 +8,7 @@ Endpoints admin : gestion du corpus via le routeur `/admin`.
 from fastapi import FastAPI
 
 from app.infrastructure.admin_routes import router as admin_router
+from app.infrastructure.staging_routes import router as staging_router
 from app.infrastructure.dependencies import get_embedder, get_ingestion_service
 from app.infrastructure.schemas import EmbedRequestSchema
 
@@ -17,6 +18,7 @@ app = FastAPI(
     version="1.0.0",
 )
 app.include_router(admin_router)
+app.include_router(staging_router)
 
 
 @app.get("/health")

@@ -55,5 +55,24 @@ class ReindexDocumentResponseSchema(BaseModel):
     total_in_collection: int
 
 
+class StagingDocumentSummarySchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    source: str
+    submitted_by: str
+    submitted_at: str
+    category: str
+    file_size_bytes: int | None = None
+
+
+class StagingCountSchema(BaseModel):
+    count: int
+
+
+class RejectStagingResponseSchema(BaseModel):
+    source: str
+    rejected: bool
+
+
 class EmbedRequestSchema(BaseModel):
     text: str

@@ -14,10 +14,13 @@ from app.adapters.parser.docling_parser import DoclingParser
 from app.adapters.storage.json_document_metadata_repository import (
     JsonDocumentMetadataRepository,
 )
+from app.adapters.storage.json_staging_registry import JsonStagingRegistry
 from app.adapters.storage.local_document_repository import LocalDocumentRepository
+from app.adapters.storage.local_staging_repository import LocalStagingRepository
 from app.adapters.vectorstore.chroma_store import ChromaStore
 from app.application.admin_service import AdminService
 from app.application.ingestion_service import IngestionService
+from app.application.staging_service import StagingService
 from app.domain.ports import Embedder, VectorStore
 from app.infrastructure.config import settings
 
@@ -60,5 +63,18 @@ def get_admin_service() -> AdminService:
         collection_name=settings.collection_name,
         document_repository=get_document_repository(),
         metadata_repository=get_metadata_repository(),
+        ingestion_service=get_ingestion_service(),
+    )
+
+
+def get_staging_service() -> StagingService:
+    return StagingService(
+        staging_repository=LocalStagingRepository(
+            staging_dir=settings.staging_dir,
+            docs_dir=settings.source_dir,
+        ),
+        staging_registry=JsonStagingRegistry(registry_path=settings.staging_registry_path),
+        metadata_repository=get_metadata_repository(),
+        vector_store=get_vector_store(),
         ingestion_service=get_ingestion_service(),
     )

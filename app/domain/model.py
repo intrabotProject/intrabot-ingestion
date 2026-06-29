@@ -62,10 +62,27 @@ class ReindexDocumentResult:
     total_in_collection: int
 
 
+@dataclass
+class StagingDocumentSummary:
+    """Vue synthétique d'un document en attente de validation admin."""
+
+    source: str
+    submitted_by: str
+    submitted_at: str
+    category: str
+    file_size_bytes: int | None = None
+
+
 class DocumentNotFoundError(Exception):
     def __init__(self, source: str):
         self.source = source
         super().__init__(f"Document not found: {source}")
+
+
+class StagingDocumentNotFoundError(Exception):
+    def __init__(self, source: str):
+        self.source = source
+        super().__init__(f"Staging document not found: {source}")
 
 
 class UnsupportedFileTypeError(Exception):

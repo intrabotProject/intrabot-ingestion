@@ -30,6 +30,16 @@ class DocumentMetadataRepository(ABC):
         """Retourne toutes les catégories connues (source → category)."""
         ...
 
+    @abstractmethod
+    def get_hash(self, source: str) -> str | None:
+        """Retourne le hash MD5 du fichier au dernier indexation, ou None si inconnu."""
+        ...
+
+    @abstractmethod
+    def set_hash(self, source: str, file_hash: str) -> None:
+        """Enregistre le hash MD5 du fichier après indexation."""
+        ...
+
 
 class DocumentRepository(ABC):
     @abstractmethod
@@ -45,6 +55,28 @@ class DocumentRepository(ABC):
     @abstractmethod
     def get_document(self, source: str) -> Document | None:
         """Retourne le document s'il est présent sur disque."""
+        ...
+
+
+class StagingDocumentRepository(ABC):
+    @abstractmethod
+    def save(self, filename: str, content: bytes) -> str:
+        """Enregistre un fichier dans la zone de staging et retourne son nom."""
+        ...
+
+    @abstractmethod
+    def move_to_docs(self, source: str) -> Document:
+        """Déplace le fichier du staging vers le dossier de production docs."""
+        ...
+
+    @abstractmethod
+    def delete(self, source: str) -> bool:
+        """Supprime un fichier du staging. Retourne True s'il existait."""
+        ...
+
+    @abstractmethod
+    def get_document(self, source: str) -> Document | None:
+        """Retourne le document staging s'il est présent sur disque."""
         ...
 
 
