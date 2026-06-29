@@ -58,9 +58,13 @@ Ouvrir http://127.0.0.1:8001/docs
 
 | Endpoint | Méthode | Description |
 |---|---|---|
-| `/ingest` | `POST` | Ingère les documents du dossier `data/docs/` |
-| `/embed` | `POST` | Envoie une question, reçoit son vecteur |
 | `/health` | `GET` | Vérifie que le service tourne |
+| `/ingest` | `POST` | Ingère tous les fichiers de `data/docs/` |
+| `/embed` | `POST` | Vectorise une question (utilisé par search) |
+| `/admin/documents` | `GET` | Liste le corpus (disque + index) |
+| `/admin/documents/upload` | `POST` | Upload d'un fichier |
+| `/admin/documents/{source}/reindex` | `POST` | Indexe un document |
+| `/admin/collection/stats` | `GET` | Statistiques ChromaDB |
 
 ---
 
@@ -69,16 +73,24 @@ Ouvrir http://127.0.0.1:8001/docs
 ```
 app/
 ├── domain/              # cœur métier — zéro dépendance externe
-│   ├── model.py         # entités : Document, Chunk
+│   ├── model.py         # entités : Document, Chunk, DocumentSummary…
 │   └── ports.py         # interfaces : Loader, Parser, Chunker, Embedder, VectorStore
 ├── adapters/            # implémentations concrètes
-│   ├── loader/          # LocalLoader (→ GoogleDriveLoader prévu)
+│   ├── loader/          # LocalLoader
 │   ├── parser/          # DoclingParser
 │   ├── chunker/         # DoclingChunker
-│   ├── embedder/        # CohereEmbedder (→ GeminiEmbedder possible)
+│   ├── embedder/        # CohereEmbedder
+│   ├── storage/         # LocalDocumentRepository
 │   └── vectorstore/     # ChromaStore
-├── application/         # IngestionService — orchestre le pipeline
-└── infrastructure/      # config, API FastAPI, injection de dépendances
+├── application/
+│   ├── ingestion_service.py   # pipeline batch / unitaire
+│   └── admin_service.py       # gestion du corpus
+└── infrastructure/
+    ├── api.py           # routes publiques
+    ├── admin_routes.py  # routes /admin
+    ├── schemas.py       # sérialisation Pydantic
+    ├── dependencies.py  # composition root
+    └── config.py        # variables d'environnement
 ```
 
 ---

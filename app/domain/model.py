@@ -1,15 +1,74 @@
+"""
+Entités et exceptions du domaine ingestion.
+
+Aucune dépendance externe : ces types sont le contrat métier partagé
+entre les services applicatifs et les adaptateurs.
+"""
+
 from dataclasses import dataclass, field
+from typing import Literal
 
 
 @dataclass
 class Document:
-    name: str        # nom du fichier ex: "rapport_2024.pdf"
-    path: str        # chemin local absolu
+    """Fichier source à ingérer (nom affiché + chemin absolu sur disque)."""
+
+    name: str
+    path: str
 
 
 @dataclass
 class Chunk:
+    """Segment de texte indexable avec métadonnées ChromaDB."""
+
     text: str
     metadata: dict = field(default_factory=dict)
-    # metadata contient par exemple :
-    # { "source": "rapport_2024.pdf", "chunk_index": 3, "headings": "Intro > Contexte" }
+    # Exemple de metadata : {"source": "rapport.pdf", "chunk_index": 3, "headings": "..."}
+
+
+@dataclass
+class DocumentSummary:
+    """Vue synthétique d'un document pour l'interface admin."""
+
+    source: str
+    chunk_count: int
+    status: Literal["indexed", "pending"]
+    category: str = "public"
+    file_size_bytes: int | None = None
+
+
+@dataclass
+class CollectionStats:
+    """Statistiques globales de la collection vectorielle."""
+
+    collection_name: str
+    document_count: int
+    chunk_count: int
+    indexed_document_count: int
+    pending_document_count: int
+
+
+@dataclass
+class DeleteDocumentResult:
+    source: str
+    file_deleted: bool
+    chunks_deleted: int
+
+
+@dataclass
+class ReindexDocumentResult:
+    source: str
+    chunks_indexed: int
+    total_in_collection: int
+
+
+class DocumentNotFoundError(Exception):
+    def __init__(self, source: str):
+        self.source = source
+        super().__init__(f"Document not found: {source}")
+
+
+class UnsupportedFileTypeError(Exception):
+    def __init__(self, filename: str):
+        self.filename = filename
+        super().__init__(f"Unsupported file type: {filename}")

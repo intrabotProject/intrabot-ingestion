@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     cohere_api_key: str = ""
     source_dir: str = "./data/docs"
     chroma_path: str = "./data/chroma"
+    metadata_registry_path: str = "./data/document_registry.json"
     collection_name: str = "intrabot"
     max_tokens: int = 512
     pdf_do_ocr: bool = False
